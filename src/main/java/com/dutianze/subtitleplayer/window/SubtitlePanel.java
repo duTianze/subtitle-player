@@ -85,13 +85,8 @@ public class SubtitlePanel extends JPanel implements Runnable {
       startTime = subtitleLines.get(0).getStartTime().getTime();
       endTime = subtitleLines.get(subtitleLines.size() - 1).getEndTime().getTime();
       // init line
-      for (int i = 0; i < 10; i++) {
-        subtitleLine = subtitleLines.get(i);
-        currentTime = subtitleLine.getStartTime().getTime();
-        if (!subtitleLine.getText().isEmpty()) {
-          return;
-        }
-      }
+      subtitleLine = subtitleLines.get(0);
+      currentTime = subtitleLine.getStartTime().getTime();
     } catch (Exception e) {
       log.error("loadSrt error", e);
     }

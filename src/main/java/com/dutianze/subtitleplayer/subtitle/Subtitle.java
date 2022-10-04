@@ -64,7 +64,6 @@ public class Subtitle {
         cue.setEndTime(new TimeCode(textLine.substring(17)));
         cursorStatus = CursorStatus.CUE_TIME_CODE;
       } else if (textLine.isEmpty() && cursorStatus == CursorStatus.CUE_TIME_CODE) {
-        cue.addLine("");
         cursorStatus = CursorStatus.CUE_TEXT;
       } else if (!textLine.isEmpty()) {
         // Following lines are the cue lines
@@ -72,15 +71,13 @@ public class Subtitle {
         cursorStatus = CursorStatus.CUE_TEXT;
       } else {
         // End of cue
-        lines.add(cue);
+        if (!cue.getTextLine().isEmpty()) {
+          lines.add(cue);
+        }
         cue = null;
         cursorStatus = CursorStatus.NONE;
       }
     }
-    if (cue != null) {
-      lines.add(cue);
-    }
-
     for (SubtitleLine subtitleLine : lines) {
       Range<Long> range = Range.closed(subtitleLine.getStartTime().getTime(),
           subtitleLine.getEndTime().getTime());
