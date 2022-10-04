@@ -30,6 +30,13 @@ public class Subtitle {
     return timeRangeMap.get(time);
   }
 
+  private void addSubtitleLine(SubtitleLine subtitleLine) {
+    if (subtitleLine.isEmpty()) {
+      return;
+    }
+    subtitleLines.add(subtitleLine);
+  }
+
   public Subtitle(InputStream is) throws IOException {
     BufferedReader br = new BufferedReader(new InputStreamReader(is, StandardCharsets.UTF_8));
 
@@ -62,11 +69,9 @@ public class Subtitle {
           status = SubtitleLineStatus.TEXT;
         }
         case TEXT -> {
+          // line end
           if (textLine.isEmpty()) {
-            // end
-            if (!subtitleLine.getTextLine().isEmpty()) {
-              subtitleLines.add(subtitleLine);
-            }
+            addSubtitleLine(subtitleLine);
             status = SubtitleLineStatus.ID;
             continue;
           }

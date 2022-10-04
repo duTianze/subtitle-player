@@ -17,10 +17,16 @@ public class SubtitleLine {
   private List<String> textLine;
 
   public SubtitleLine() {
-    textLine = new ArrayList<>();
+  }
+
+  public boolean isEmpty() {
+    return textLine == null || textLine.isEmpty();
   }
 
   public void addLine(String text) {
+    if (textLine == null) {
+      textLine = new ArrayList<>();
+    }
     textLine.add(text);
   }
 
