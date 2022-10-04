@@ -41,6 +41,8 @@ public class SubtitlePanel extends JPanel implements Runnable {
   private FrameDragListener frameDragListener;
   private Dimension dimension = Toolkit.getDefaultToolkit().getScreenSize();
   private Point center;
+  private Color FONT_BORDER_COLOR = new Color(236, 64, 81);
+  private Float fontSize = 40F;
 
   // time
   private long currentTime;
@@ -129,44 +131,35 @@ public class SubtitlePanel extends JPanel implements Runnable {
   }
 
   public void paintComponent(Graphics g) {
-    String line = subtitleLine.getText();
-    // set font
+
+    // set graphics
     Graphics2D g2 = (Graphics2D) g;
     g2.setRenderingHint(RenderingHints.KEY_TEXT_ANTIALIASING,
         RenderingHints.VALUE_TEXT_ANTIALIAS_ON);
-    g2.setFont(g2.getFont().deriveFont(Font.BOLD, 50F));
+    g2.setFont(g2.getFont().deriveFont(Font.BOLD, fontSize));
+
+    // size
+    String line = subtitleLine.getText();
+    screenWidth = getMaxTextLength(line, g2);
     int textHeight = (int) g2.getFontMetrics().getStringBounds(line, g2).getHeight() + 10;
 
-    // draw text
-    screenWidth = getMaxTextLength(line, g2);
     int textX;
     int textY = textHeight;
 
     for (String text : line.split("\n")) {
       textX = getXForCenteredText(text, screenWidth, g2);
-      // 红边框
-      g2.setColor(new Color(236, 64, 81));
+
+      g2.setColor(FONT_BORDER_COLOR);
       g2.drawString(text, textX, textY);
 
-      // 白字
-      g2.setFont(g2.getFont().deriveFont(Font.PLAIN, 50F));
-      g2.setColor(new Color(255, 255, 255));
+      g2.setColor(FONT_BORDER_COLOR);
       g2.drawString(text, textX + 1, textY + 1);
 
-      // 红边框
-      g2.setColor(new Color(236, 64, 81));
-      g2.drawString(text, textX + 1, textY + 1);
-
-      // 白字
-      g2.setFont(g2.getFont().deriveFont(Font.PLAIN, 50F));
-      g2.setColor(new Color(255, 255, 255));
+      g2.setColor(Color.white);
       g2.drawString(text, textX, textY);
 
       textY += textHeight;
     }
-
-    // time
-//    g2.drawString("");
 
     screenHeight = Math.max(textY - textHeight + 20, 80);
     screenWidth = Math.max(screenWidth, 80);
