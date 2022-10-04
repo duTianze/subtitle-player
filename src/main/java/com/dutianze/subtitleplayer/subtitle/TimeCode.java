@@ -17,14 +17,14 @@ public class TimeCode {
   private int second;
   private int millisecond;
 
-  public TimeCode(String str) throws SubtitleParsingException {
+  public TimeCode(String str) {
     try {
       this.hour = Integer.parseInt(str.substring(0, 2));
       this.minute = Integer.parseInt(str.substring(3, 5));
       this.second = Integer.parseInt(str.substring(6, 8));
       this.millisecond = Integer.parseInt(str.substring(9, 12));
     } catch (NumberFormatException e) {
-      throw new SubtitleParsingException("Error parse " + str, e);
+      throw new RuntimeException("Error parse " + str, e);
     }
   }
 

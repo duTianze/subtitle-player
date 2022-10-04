@@ -13,12 +13,12 @@ import org.junit.jupiter.api.Test;
 class SubtitleTest {
 
   @Test
-  void parse() throws IOException, SubtitleParsingException {
+  void parse() throws IOException {
     InputStream inputStream = Subtitle.class.getResourceAsStream(
         "/Kanojo_Mo_Kanojo_001.srt");
-    Subtitle srtObject = new Subtitle(inputStream);
 
-    SubtitleLine subtitleLine = srtObject.getSubtitleLine(105836L);
+    Subtitle subtitle = new Subtitle(inputStream);
+    SubtitleLine subtitleLine = subtitle.getSubtitleLine(105836L);
 
     assertNotNull(subtitleLine);
   }

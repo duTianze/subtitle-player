@@ -81,7 +81,7 @@ public class SubtitlePanel extends JPanel implements Runnable {
   public void loadSrt(InputStream inputStream) {
     try {
       subtitle = new Subtitle(inputStream);
-      List<SubtitleLine> subtitleLines = subtitle.getLines();
+      List<SubtitleLine> subtitleLines = subtitle.getSubtitleLines();
       startTime = subtitleLines.get(0).getStartTime().getTime();
       endTime = subtitleLines.get(subtitleLines.size() - 1).getEndTime().getTime();
       // init line

@@ -22,7 +22,7 @@ import lombok.Getter;
 @SuppressWarnings("UnstableApiUsage")
 public class Subtitle {
 
-  private final List<SubtitleLine> lines = new ArrayList<>();
+  private final List<SubtitleLine> subtitleLines = new ArrayList<>();
   private final Map<Integer, SubtitleLine> idMap = new HashMap<>();
   private final RangeMap<Long, SubtitleLine> timeRangeMap = TreeRangeMap.create();
 
@@ -30,66 +30,62 @@ public class Subtitle {
     return timeRangeMap.get(time);
   }
 
-  public Subtitle(InputStream is) throws IOException, SubtitleParsingException {
-    // Read each lines
+  public Subtitle(InputStream is) throws IOException {
     BufferedReader br = new BufferedReader(new InputStreamReader(is, StandardCharsets.UTF_8));
+
     String textLine;
-    CursorStatus cursorStatus = CursorStatus.NONE;
-    SubtitleLine cue = null;
+    SubtitleLineStatus status = SubtitleLineStatus.ID;
+    SubtitleLine subtitleLine = null;
     while ((textLine = br.readLine()) != null) {
       textLine = textLine.trim();
-      if (cursorStatus == CursorStatus.NONE) {
-        if (textLine.isEmpty()) {
-          continue;
+      switch (status) {
+        case ID -> {
+          try {
+            if (textLine.isEmpty()) {
+              continue;
+            }
+            textLine = textLine.replaceAll("\\uFEFF", "");
+            subtitleLine = new SubtitleLine();
+            int id = Integer.parseInt(textLine);
+            subtitleLine.setId(id);
+            status = SubtitleLineStatus.TIME_CODE;
+          } catch (Exception e) {
+            throw new RuntimeException(String.format("Unable to parse id: %s", textLine));
+          }
         }
-        textLine = textLine.replaceAll("\\uFEFF", "");
-        cue = new SubtitleLine();
-        // First textLine is the cue number
-        try {
-          Integer.parseInt(textLine);
-        } catch (NumberFormatException e) {
-          throw new SubtitleParsingException(
-              String.format("Unable to parse cue number: %s", textLine));
+        case TIME_CODE -> {
+          if (!textLine.startsWith("-->", 13)) {
+            throw new RuntimeException(String.format("Bad format Time code: %s", textLine));
+          }
+          subtitleLine.setStartTime(new TimeCode(textLine.substring(0, 12)));
+          subtitleLine.setEndTime(new TimeCode(textLine.substring(17)));
+          status = SubtitleLineStatus.TEXT;
         }
-        cue.setId(Integer.parseInt(textLine));
-        cursorStatus = CursorStatus.CUE_ID;
-      } else if (cursorStatus == CursorStatus.CUE_ID) {
-        // Second textLine defines the start and end time codes
-        // 00:01:21,456 --> 00:01:23,417
-        if (!textLine.startsWith("-->", 13)) {
-          throw new SubtitleParsingException(String.format(
-              "Time code textLine is badly formatted: %s", textLine));
+        case TEXT -> {
+          if (textLine.isEmpty()) {
+            // end
+            if (!subtitleLine.getTextLine().isEmpty()) {
+              subtitleLines.add(subtitleLine);
+            }
+            status = SubtitleLineStatus.ID;
+            continue;
+          }
+          subtitleLine.addLine(textLine);
         }
-        cue.setStartTime(new TimeCode(textLine.substring(0, 12)));
-        cue.setEndTime(new TimeCode(textLine.substring(17)));
-        cursorStatus = CursorStatus.CUE_TIME_CODE;
-      } else if (textLine.isEmpty() && cursorStatus == CursorStatus.CUE_TIME_CODE) {
-        cursorStatus = CursorStatus.CUE_TEXT;
-      } else if (!textLine.isEmpty()) {
-        // Following lines are the cue lines
-        cue.addLine(textLine);
-        cursorStatus = CursorStatus.CUE_TEXT;
-      } else {
-        // End of cue
-        if (!cue.getTextLine().isEmpty()) {
-          lines.add(cue);
-        }
-        cue = null;
-        cursorStatus = CursorStatus.NONE;
       }
     }
-    for (SubtitleLine subtitleLine : lines) {
-      Range<Long> range = Range.closed(subtitleLine.getStartTime().getTime(),
-          subtitleLine.getEndTime().getTime());
-      timeRangeMap.put(range, subtitleLine);
-      idMap.put(subtitleLine.getId(), subtitleLine);
+
+    // index
+    for (SubtitleLine line : subtitleLines) {
+      Range<Long> range = Range.closed(line.getStartTime().getTime(), line.getEndTime().getTime());
+      timeRangeMap.put(range, line);
+      idMap.put(line.getId(), line);
     }
   }
 
-  private enum CursorStatus {
-    NONE,
-    CUE_ID,
-    CUE_TIME_CODE,
-    CUE_TEXT
+  private enum SubtitleLineStatus {
+    ID,
+    TIME_CODE,
+    TEXT
   }
 }
