@@ -163,15 +163,18 @@ public class SubtitlePanel extends JPanel implements Runnable {
 
     screenHeight = Math.max(textY - textHeight + 20, 80);
     screenWidth = Math.max(screenWidth, 80);
+
     // reset size
     this.setSize(screenWidth, screenHeight);
     window.setSize(screenWidth, screenHeight);
+
     // reset location
     Point location = window.getLocation();
     if (frameDragListener.isDrag()) {
       center = new Point((int) (location.getX() + screenWidth / 2), (int) location.getY());
     }
     window.setLocation((int) (center.getX() - screenWidth / 2), (int) center.getY());
+
     // dispose
     g2.dispose();
   }
