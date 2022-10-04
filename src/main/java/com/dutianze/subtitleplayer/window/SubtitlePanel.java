@@ -153,10 +153,10 @@ public class SubtitlePanel extends JPanel implements Runnable {
       g2.drawString(text, textX, textY);
 
       g2.setColor(FONT_BORDER_COLOR);
-      g2.drawString(text, textX + 1, textY + 1);
+      g2.drawString(text, textX + 2, textY + 2);
 
       g2.setColor(Color.white);
-      g2.drawString(text, textX, textY);
+      g2.drawString(text, textX + 1, textY + 1);
 
       textY += textHeight;
     }
