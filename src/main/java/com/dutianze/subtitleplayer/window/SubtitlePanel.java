@@ -54,7 +54,7 @@ public class SubtitlePanel extends JPanel implements Runnable {
     // init
     this.window = window;
     this.setPreferredSize(new Dimension(screenWidth, screenHeight));
-    this.setBackground(new Color(0.1f, 0.1f, 1f, 0.1f));
+    this.setBackground(new Color(0.1f, 0.1f, 0.1f, 0.1f));
     this.setDoubleBuffered(true);
     this.setFocusable(true);
     try {
