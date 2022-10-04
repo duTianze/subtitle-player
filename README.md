@@ -1,4 +1,4 @@
-# Foobar
+# Subtitle Player
 
 subtitle-player is a java GUI Application for play subtitle independent.
 
