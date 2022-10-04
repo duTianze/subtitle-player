@@ -31,7 +31,7 @@ public class Subtitle {
   }
 
   private void addSubtitleLine(SubtitleLine subtitleLine) {
-    if (subtitleLine.isEmpty()) {
+    if (subtitleLine == null ||subtitleLine.isEmpty()) {
       return;
     }
     subtitleLines.add(subtitleLine);
@@ -40,9 +40,10 @@ public class Subtitle {
   public Subtitle(InputStream is) throws IOException {
     BufferedReader br = new BufferedReader(new InputStreamReader(is, StandardCharsets.UTF_8));
 
-    String textLine;
     SubtitleLineStatus status = SubtitleLineStatus.ID;
     SubtitleLine subtitleLine = null;
+
+    String textLine;
     while ((textLine = br.readLine()) != null) {
       textLine = textLine.trim();
       switch (status) {
