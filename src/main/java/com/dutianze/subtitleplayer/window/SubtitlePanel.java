@@ -1,9 +1,11 @@
 package com.dutianze.subtitleplayer.window;
 
+import com.dutianze.subtitleplayer.listener.FileDropHandler;
 import com.dutianze.subtitleplayer.listener.FrameDragListener;
 import com.dutianze.subtitleplayer.listener.KeyHandler;
 import com.dutianze.subtitleplayer.subtitle.Subtitle;
 import com.dutianze.subtitleplayer.subtitle.SubtitleLine;
+import com.dutianze.subtitleplayer.subtitle.TimeCode;
 import java.awt.Color;
 import java.awt.Dimension;
 import java.awt.Font;
@@ -12,11 +14,15 @@ import java.awt.Graphics2D;
 import java.awt.Point;
 import java.awt.RenderingHints;
 import java.awt.Toolkit;
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
 import java.io.InputStream;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
+import java.util.Optional;
 import javax.swing.JFrame;
 import javax.swing.JPanel;
 import lombok.Getter;
@@ -31,6 +37,8 @@ import lombok.extern.slf4j.Slf4j;
 @Getter
 @Setter
 public class SubtitlePanel extends JPanel implements Runnable {
+
+  private static final String EMPTY_TEXT = "  ";
 
   private final int FPS = 20;
   public int screenWidth = 1000;
@@ -48,9 +56,14 @@ public class SubtitlePanel extends JPanel implements Runnable {
   private long currentTime;
   private long startTime;
   private long endTime;
+
   // subtitle
   private Subtitle subtitle = null;
   private SubtitleLine subtitleLine = null;
+  private String currentText = EMPTY_TEXT;
+
+  // state
+  private PlayerState playerState = PlayerState.PLAY_STATE;
 
   public SubtitlePanel(JFrame window) {
     // init
@@ -72,21 +85,31 @@ public class SubtitlePanel extends JPanel implements Runnable {
     this.addKeyListener(keyHandler);
     window.addMouseListener(frameDragListener);
     window.addMouseMotionListener(frameDragListener);
+    FileDropHandler fileDropHandler = new FileDropHandler(this);
+    this.setTransferHandler(fileDropHandler);
 
     // subtitle
     InputStream testIn = Subtitle.class.getResourceAsStream("/Kanojo_Mo_Kanojo_001.srt");
-    loadSrt(testIn);
+    loadSrt(testIn, "Kanojo_Mo_Kanojo_001.srt");
   }
 
-  public void loadSrt(InputStream inputStream) {
+  public void loadSrt(File file) {
     try {
-      subtitle = new Subtitle(inputStream);
+      loadSrt(new FileInputStream(file), file.getName());
+    } catch (FileNotFoundException e) {
+      log.error("loadSrt error", e);
+    }
+  }
+
+  private void loadSrt(InputStream inputStream, String fileName) {
+    try {
+      subtitle = new Subtitle(inputStream, fileName);
       List<SubtitleLine> subtitleLines = subtitle.getSubtitleLines();
       startTime = subtitleLines.get(0).getStartTime().getTime();
       endTime = subtitleLines.get(subtitleLines.size() - 1).getEndTime().getTime();
-      // init line
       subtitleLine = subtitleLines.get(0);
-      currentTime = subtitleLine.getStartTime().getTime();
+      currentTime = 0;
+      currentText = fileName;
     } catch (Exception e) {
       log.error("loadSrt error", e);
     }
@@ -118,15 +141,30 @@ public class SubtitlePanel extends JPanel implements Runnable {
   }
 
   public void update() {
-    currentTime = currentTime + 1_000 / FPS;
+    if (subtitle == null) {
+      return;
+    }
+
+    if (playerState == PlayerState.PLAY_STATE) {
+      currentTime = currentTime + 1_000 / FPS;
+    }
+
     SubtitleLine subtitleLine = subtitle.getSubtitleLine(currentTime);
-    if (subtitleLine != null) {
+    Optional.ofNullable(subtitleLine).map(SubtitleLine::getText).ifPresentOrElse(text -> {
       this.subtitleLine = subtitleLine;
+      this.currentText = text;
+    }, () -> {
+      if (currentTime > startTime) {
+        this.currentText = EMPTY_TEXT;
+      }
+    });
+
+    if (playerState == PlayerState.PAUSE_STATE) {
+      this.currentText = "暂停: " + new TimeCode(currentTime);
     }
   }
 
   public void paintComponent(Graphics g) {
-
     // set graphics
     Graphics2D g2 = (Graphics2D) g;
     g2.setRenderingHint(RenderingHints.KEY_TEXT_ANTIALIASING,
@@ -134,14 +172,13 @@ public class SubtitlePanel extends JPanel implements Runnable {
     g2.setFont(g2.getFont().deriveFont(Font.BOLD, fontSize));
 
     // size
-    String line = subtitleLine.getText();
-    screenWidth = getMaxTextLength(line, g2);
-    int textHeight = (int) g2.getFontMetrics().getStringBounds(line, g2).getHeight() + 10;
+    screenWidth = getMaxTextLength(currentText, g2);
+    int textHeight = (int) g2.getFontMetrics().getStringBounds(currentText, g2).getHeight() + 10;
 
     int textX;
     int textY = textHeight;
 
-    for (String text : line.split("\n")) {
+    for (String text : currentText.split("\n")) {
       textX = getXForCenteredText(text, screenWidth, g2);
 
       g2.setColor(FONT_BORDER_COLOR);
@@ -198,5 +235,6 @@ public class SubtitlePanel extends JPanel implements Runnable {
       throw new RuntimeException("jump error, next is null");
     }
     currentTime = next.getStartTime().getTime();
+    update();
   }
 }

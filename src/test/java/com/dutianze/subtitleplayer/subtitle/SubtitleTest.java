@@ -17,7 +17,7 @@ class SubtitleTest {
     InputStream inputStream = Subtitle.class.getResourceAsStream(
         "/Kanojo_Mo_Kanojo_001.srt");
 
-    Subtitle subtitle = new Subtitle(inputStream);
+    Subtitle subtitle = new Subtitle(inputStream, "Kanojo_Mo_Kanojo_001.srt");
     SubtitleLine subtitleLine = subtitle.getSubtitleLine(105836L);
 
     assertNotNull(subtitleLine);

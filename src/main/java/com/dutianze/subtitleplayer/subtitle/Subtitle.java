@@ -22,6 +22,7 @@ import lombok.Getter;
 @SuppressWarnings("UnstableApiUsage")
 public class Subtitle {
 
+  private final String fileName;
   private final List<SubtitleLine> subtitleLines = new ArrayList<>();
   private final Map<Integer, SubtitleLine> idMap = new HashMap<>();
   private final RangeMap<Long, SubtitleLine> timeRangeMap = TreeRangeMap.create();
@@ -37,7 +38,8 @@ public class Subtitle {
     subtitleLines.add(subtitleLine);
   }
 
-  public Subtitle(InputStream is) throws IOException {
+  public Subtitle(InputStream is, String fileName) throws IOException {
+    this.fileName = fileName;
     BufferedReader br = new BufferedReader(new InputStreamReader(is, StandardCharsets.UTF_8));
 
     SubtitleLineStatus status = SubtitleLineStatus.ID;

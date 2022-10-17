@@ -30,6 +30,9 @@ public class KeyHandler implements KeyListener {
     if (keyCode == KeyEvent.VK_DOWN) {
       subtitlePanel.jump(1);
     }
+    if (keyCode == KeyEvent.VK_SPACE) {
+      subtitlePanel.setPlayerState(subtitlePanel.getPlayerState().opposite());
+    }
   }
 
   @Override

@@ -1,6 +1,7 @@
 package com.dutianze.subtitleplayer.subtitle;
 
 import lombok.Data;
+import org.apache.commons.lang3.StringUtils;
 
 /**
  * @author dutianze
@@ -50,5 +51,14 @@ public class TimeCode {
 
   public int compareTo(TimeCode toCompare) {
     return Long.compare(this.getTime(), toCompare.getTime());
+  }
+
+  @Override
+  public String toString() {
+    return padding(hour) + ":" + padding(minute) + ":" + padding(second);
+  }
+
+  private String padding(long number) {
+    return StringUtils.leftPad(number + "", 2, "0");
   }
 }
