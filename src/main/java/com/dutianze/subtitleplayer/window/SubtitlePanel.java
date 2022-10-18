@@ -39,6 +39,8 @@ import lombok.extern.slf4j.Slf4j;
 public class SubtitlePanel extends JPanel implements Runnable {
 
   private static final String EMPTY_TEXT = "  ";
+  private static final String PAUSE_ICON = "▶";
+
 
   private final int FPS = 20;
   public int screenWidth = 1000;
@@ -61,6 +63,7 @@ public class SubtitlePanel extends JPanel implements Runnable {
   private Subtitle subtitle = null;
   private SubtitleLine subtitleLine = null;
   private String currentText = EMPTY_TEXT;
+  private String preText = EMPTY_TEXT;
 
   // state
   private PlayerState playerState = PlayerState.PLAY_STATE;
@@ -109,7 +112,6 @@ public class SubtitlePanel extends JPanel implements Runnable {
       endTime = subtitleLines.get(subtitleLines.size() - 1).getEndTime().getTime();
       subtitleLine = subtitleLines.get(0);
       currentTime = 0;
-      currentText = fileName;
     } catch (Exception e) {
       log.error("loadSrt error", e);
     }
@@ -152,15 +154,17 @@ public class SubtitlePanel extends JPanel implements Runnable {
     SubtitleLine subtitleLine = subtitle.getSubtitleLine(currentTime);
     Optional.ofNullable(subtitleLine).map(SubtitleLine::getText).ifPresentOrElse(text -> {
       this.subtitleLine = subtitleLine;
-      this.currentText = text;
+      this.preText = this.currentText = text;
     }, () -> {
       if (currentTime > startTime) {
-        this.currentText = EMPTY_TEXT;
+        this.preText = this.currentText = EMPTY_TEXT;
+      } else {
+        this.preText = this.currentText = subtitle.getFileName();
       }
     });
 
     if (playerState == PlayerState.PAUSE_STATE) {
-      this.currentText = "暂停: " + new TimeCode(currentTime);
+      this.currentText = preText + "  " + PAUSE_ICON + "" + new TimeCode(currentTime);
     }
   }
 

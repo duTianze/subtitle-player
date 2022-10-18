@@ -82,9 +82,11 @@ public class SystemTrayPanel {
       int result = JOptionPane.showConfirmDialog(null,
           dialog, "Test", JOptionPane.OK_CANCEL_OPTION);
       if (result == JOptionPane.OK_OPTION) {
-        String string = dialog.getIdFieldString();
-        System.out.println(string);
-        // Do your processing
+        String jumpTime = dialog.getIdFieldString();
+        log.info("getIdFieldString jumpTime:{}", jumpTime);
+        TimeCode timeCode = TimeCode.parseString(jumpTime);
+        subtitlePanel.setCurrentTime(timeCode.getTime());
+        subtitlePanel.update();
       }
     });
     pre.addActionListener(e -> subtitlePanel.jump(-1));

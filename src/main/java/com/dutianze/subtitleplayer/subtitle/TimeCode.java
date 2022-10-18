@@ -44,6 +44,12 @@ public class TimeCode {
         + this.second * MS_SECOND));
   }
 
+  public static TimeCode parseString(String timeString) {
+    String[] times = timeString.split(":", 3);
+    return new TimeCode(Integer.parseInt(times[0]), Integer.parseInt(times[1]),
+        Integer.parseInt(times[2]), 0);
+  }
+
   public long getTime() {
     return (long) this.hour * MS_HOUR + (long) this.minute * MS_MINUTE
         + (long) this.second * MS_SECOND + this.getMillisecond();
