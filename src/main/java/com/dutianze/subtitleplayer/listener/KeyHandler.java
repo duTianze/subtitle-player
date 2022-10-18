@@ -33,7 +33,6 @@ public class KeyHandler implements KeyListener {
     if (keyCode == KeyEvent.VK_SPACE) {
       subtitlePanel.setPlayerState(subtitlePanel.getPlayerState().opposite());
       subtitlePanel.update();
-      System.out.println("sssss");
     }
   }
 
