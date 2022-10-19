@@ -11,7 +11,9 @@ jdk 17
  ./mvnw spring-boot:run
 ```
 up -> jump to pre subtitle
+
 down -> jump to next subtitle
+
 space -> pause
 
 ## screenshot
