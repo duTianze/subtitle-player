@@ -11,6 +11,14 @@ jdk 17
  ./mvnw spring-boot:run
 ```
 
+## keymap
+
+- up -> jump to pre subtitle
+
+- down -> jump to next subtitle
+
+- space -> pause
+
 ## screenshot
 ![](screenshot/effect.png)
 
