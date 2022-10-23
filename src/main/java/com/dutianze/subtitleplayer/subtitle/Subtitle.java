@@ -73,8 +73,8 @@ public class Subtitle {
           status = SubtitleLineStatus.TEXT;
         }
         case TEXT -> {
-          // line end
-          if (textLine.isEmpty()) {
+          // subtitle is empty or all character is symbol -> it is line end
+          if (textLine.isEmpty() || textLine.matches("[.]+")) {
             addSubtitleLine(subtitleLine);
             status = SubtitleLineStatus.ID;
             continue;
