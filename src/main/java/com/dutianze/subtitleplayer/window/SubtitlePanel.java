@@ -171,7 +171,7 @@ public class SubtitlePanel extends JPanel implements Runnable {
 
     String screenOutput = currentText;
     if (playerState == PlayerState.PAUSE_STATE) {
-      screenOutput += "  " + PAUSE_ICON + "" + new TimeCode(currentTime);
+      screenOutput += "\n" + PAUSE_ICON + "" + new TimeCode(currentTime);
     }
 
     screenWidth = getMaxTextLength(screenOutput, g2);
