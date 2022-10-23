@@ -236,9 +236,14 @@ public class SubtitlePanel extends JPanel implements Runnable {
     }
     SubtitleLine next = idMap.get(subtitleLine.getId() + num);
     if (next == null) {
-      throw new RuntimeException("jump error, next is null");
+      log.info("jump error, next is null");
+      return;
+    }
+    // jump to next different subtitle
+    if (next.getText().equals(currentText)) {
+      jump(num + (num < 0 ? -1 : 1));
+      return;
     }
     currentTime = next.getStartTime().getTime();
-    update();
   }
 }

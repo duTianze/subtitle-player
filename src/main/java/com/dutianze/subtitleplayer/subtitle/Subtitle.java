@@ -32,7 +32,7 @@ public class Subtitle {
   }
 
   private void addSubtitleLine(SubtitleLine subtitleLine) {
-    if (subtitleLine == null ||subtitleLine.isEmpty()) {
+    if (subtitleLine == null || subtitleLine.isEmpty()) {
       return;
     }
     subtitleLines.add(subtitleLine);
@@ -56,8 +56,9 @@ public class Subtitle {
             }
             textLine = textLine.replaceAll("\\uFEFF", "");
             subtitleLine = new SubtitleLine();
-            int id = Integer.parseInt(textLine);
-            subtitleLine.setId(id);
+            Integer.parseInt(textLine);
+            // use subtitle order number
+            subtitleLine.setId(subtitleLines.size());
             status = SubtitleLineStatus.TIME_CODE;
           } catch (Exception e) {
             throw new RuntimeException(String.format("Unable to parse id: %s", textLine));
