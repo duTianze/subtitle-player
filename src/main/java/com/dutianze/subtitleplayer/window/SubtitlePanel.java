@@ -38,9 +38,7 @@ import lombok.extern.slf4j.Slf4j;
 @Setter
 public class SubtitlePanel extends JPanel implements Runnable {
 
-  private static final String EMPTY_TEXT = "  ";
   private static final String PAUSE_ICON = "▶";
-
 
   private final int FPS = 20;
   public int screenWidth = 1000;
@@ -62,7 +60,7 @@ public class SubtitlePanel extends JPanel implements Runnable {
   // subtitle
   private Subtitle subtitle = null;
   private SubtitleLine subtitleLine = null;
-  private String currentText = EMPTY_TEXT;
+  private String currentText = "";
 
   // state
   private PlayerState playerState = PlayerState.PLAY_STATE;
@@ -155,11 +153,12 @@ public class SubtitlePanel extends JPanel implements Runnable {
       this.subtitleLine = subtitleLine;
       this.currentText = text;
     }, () -> {
-      if (currentTime > startTime) {
-        this.currentText = EMPTY_TEXT;
-      } else {
+      // before the first subtitle, show file name
+      if (currentTime < startTime) {
         this.currentText = subtitle.getFileName();
+        return;
       }
+      this.currentText = "";
     });
   }
 
