@@ -1,7 +1,7 @@
 package com.dutianze.subtitleplayer;
 
-import com.dutianze.subtitleplayer.window.SystemTrayPanel;
 import com.dutianze.subtitleplayer.window.SubtitlePanel;
+import com.dutianze.subtitleplayer.window.SystemTrayPanel;
 import java.awt.Color;
 import java.awt.Dimension;
 import java.awt.EventQueue;

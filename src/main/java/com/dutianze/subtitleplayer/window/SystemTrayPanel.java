@@ -86,7 +86,6 @@ public class SystemTrayPanel {
         log.info("getIdFieldString jumpTime:{}", jumpTime);
         TimeCode timeCode = TimeCode.parseString(jumpTime);
         subtitlePanel.setCurrentTime(timeCode.getTime());
-        subtitlePanel.update();
       }
     });
     pre.addActionListener(e -> subtitlePanel.jump(-1));

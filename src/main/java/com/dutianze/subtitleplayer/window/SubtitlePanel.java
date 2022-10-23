@@ -63,7 +63,6 @@ public class SubtitlePanel extends JPanel implements Runnable {
   private Subtitle subtitle = null;
   private SubtitleLine subtitleLine = null;
   private String currentText = EMPTY_TEXT;
-  private String preText = EMPTY_TEXT;
 
   // state
   private PlayerState playerState = PlayerState.PLAY_STATE;
@@ -154,18 +153,14 @@ public class SubtitlePanel extends JPanel implements Runnable {
     SubtitleLine subtitleLine = subtitle.getSubtitleLine(currentTime);
     Optional.ofNullable(subtitleLine).map(SubtitleLine::getText).ifPresentOrElse(text -> {
       this.subtitleLine = subtitleLine;
-      this.preText = this.currentText = text;
+      this.currentText = text;
     }, () -> {
       if (currentTime > startTime) {
-        this.preText = this.currentText = EMPTY_TEXT;
+        this.currentText = EMPTY_TEXT;
       } else {
-        this.preText = this.currentText = subtitle.getFileName();
+        this.currentText = subtitle.getFileName();
       }
     });
-
-    if (playerState == PlayerState.PAUSE_STATE) {
-      this.currentText = preText + "  " + PAUSE_ICON + "" + new TimeCode(currentTime);
-    }
   }
 
   public void paintComponent(Graphics g) {
@@ -175,14 +170,18 @@ public class SubtitlePanel extends JPanel implements Runnable {
         RenderingHints.VALUE_TEXT_ANTIALIAS_ON);
     g2.setFont(g2.getFont().deriveFont(Font.BOLD, fontSize));
 
-    // size
-    screenWidth = getMaxTextLength(currentText, g2);
-    int textHeight = (int) g2.getFontMetrics().getStringBounds(currentText, g2).getHeight() + 10;
+    String screenOutput = currentText;
+    if (playerState == PlayerState.PAUSE_STATE) {
+      screenOutput += "  " + PAUSE_ICON + "" + new TimeCode(currentTime);
+    }
+
+    screenWidth = getMaxTextLength(screenOutput, g2);
+    int textHeight = (int) g2.getFontMetrics().getStringBounds(screenOutput, g2).getHeight() + 10;
 
     int textX;
     int textY = textHeight;
 
-    for (String text : currentText.split("\n")) {
+    for (String text : screenOutput.split("\n")) {
       textX = getXForCenteredText(text, screenWidth, g2);
 
       g2.setColor(FONT_BORDER_COLOR);
