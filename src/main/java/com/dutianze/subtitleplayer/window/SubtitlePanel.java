@@ -49,7 +49,7 @@ public class SubtitlePanel extends JPanel implements Runnable {
   public static Float BIG_FONT_SIZE = 40F;
   public static Float SMALL_FONT_SIZE = 20F;
 
-  // time
+  // time millisecond
   private long currentTime;
   private long startTime;
   private long endTime;
