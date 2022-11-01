@@ -8,7 +8,7 @@ import org.apache.commons.lang3.StringUtils;
  * @date 2022/10/3
  */
 @Data
-public class TimeCode {
+public class CueTiming {
 
   private final int MS_HOUR = 3600000;
   private final int MS_MINUTE = 60000;
@@ -18,7 +18,7 @@ public class TimeCode {
   private int second;
   private int millisecond;
 
-  public TimeCode(String str) {
+  public CueTiming(String str) {
     try {
       this.hour = Integer.parseInt(str.substring(0, 2));
       this.minute = Integer.parseInt(str.substring(3, 5));
@@ -29,14 +29,14 @@ public class TimeCode {
     }
   }
 
-  public TimeCode(int hour, int minute, int second, int millisecond) {
+  public CueTiming(int hour, int minute, int second, int millisecond) {
     this.hour = hour;
     this.minute = minute;
     this.second = second;
     this.millisecond = millisecond;
   }
 
-  public TimeCode(long time) {
+  public CueTiming(long time) {
     this.hour = (int) (time / MS_HOUR);
     this.minute = (int) ((time - (this.hour * MS_HOUR)) / MS_MINUTE);
     this.second = (int) ((time - (this.hour * MS_HOUR + this.minute * MS_MINUTE)) / MS_SECOND);
@@ -44,9 +44,9 @@ public class TimeCode {
         + this.second * MS_SECOND));
   }
 
-  public static TimeCode parseString(String timeString) {
+  public static CueTiming parseString(String timeString) {
     String[] times = timeString.split(":", 3);
-    return new TimeCode(Integer.parseInt(times[0]), Integer.parseInt(times[1]),
+    return new CueTiming(Integer.parseInt(times[0]), Integer.parseInt(times[1]),
         Integer.parseInt(times[2]), 0);
   }
 
@@ -55,7 +55,7 @@ public class TimeCode {
         + (long) this.second * MS_SECOND + this.getMillisecond();
   }
 
-  public int compareTo(TimeCode toCompare) {
+  public int compareTo(CueTiming toCompare) {
     return Long.compare(this.getTime(), toCompare.getTime());
   }
 

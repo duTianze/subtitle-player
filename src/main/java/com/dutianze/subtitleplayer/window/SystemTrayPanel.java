@@ -1,6 +1,6 @@
 package com.dutianze.subtitleplayer.window;
 
-import com.dutianze.subtitleplayer.subtitle.TimeCode;
+import com.dutianze.subtitleplayer.subtitle.CueTiming;
 import java.awt.AWTException;
 import java.awt.Image;
 import java.awt.MenuItem;
@@ -33,7 +33,7 @@ public class SystemTrayPanel {
     this.subtitlePanel = subtitlePanel;
     //Check the SystemTray is supported
     if (!SystemTray.isSupported()) {
-      System.out.println("SystemTray is not supported");
+      log.info("SystemTray is not supported");
       return;
     }
 
@@ -68,7 +68,7 @@ public class SystemTrayPanel {
     try {
       tray.add(trayIcon);
     } catch (AWTException e) {
-      System.out.println("TrayIcon could not be added.");
+      log.info("TrayIcon could not be added.");
     }
 
     trayIcon.addActionListener(e -> JOptionPane.showMessageDialog(null,
@@ -84,8 +84,8 @@ public class SystemTrayPanel {
       if (result == JOptionPane.OK_OPTION) {
         String jumpTime = dialog.getIdFieldString();
         log.info("getIdFieldString jumpTime:{}", jumpTime);
-        TimeCode timeCode = TimeCode.parseString(jumpTime);
-        subtitlePanel.setCurrentTime(timeCode.getTime());
+        CueTiming cueTiming = CueTiming.parseString(jumpTime);
+        subtitlePanel.setCurrentTime(cueTiming.getTime());
       }
     });
     pre.addActionListener(e -> subtitlePanel.jump(-1));
@@ -132,7 +132,7 @@ public class SystemTrayPanel {
 
     public DialogPanel(SubtitlePanel subtitlePanel) {
       add(new JLabel("Insert something to validate here:"));
-      idField.setText(new TimeCode(subtitlePanel.getCurrentTime()).toString());
+      idField.setText(new CueTiming(subtitlePanel.getCurrentTime()).toString());
       add(idField);
     }
 

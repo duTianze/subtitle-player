@@ -3,9 +3,8 @@ package com.dutianze.subtitleplayer.window;
 import com.dutianze.subtitleplayer.listener.FileDropHandler;
 import com.dutianze.subtitleplayer.listener.FrameDragListener;
 import com.dutianze.subtitleplayer.listener.KeyHandler;
+import com.dutianze.subtitleplayer.subtitle.Cue;
 import com.dutianze.subtitleplayer.subtitle.Subtitle;
-import com.dutianze.subtitleplayer.subtitle.SubtitleLine;
-import com.dutianze.subtitleplayer.subtitle.TimeCode;
 import java.awt.Color;
 import java.awt.Dimension;
 import java.awt.Font;
@@ -18,7 +17,6 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.InputStream;
-import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
@@ -38,8 +36,6 @@ import lombok.extern.slf4j.Slf4j;
 @Setter
 public class SubtitlePanel extends JPanel implements Runnable {
 
-  private static final String PAUSE_ICON = "▶";
-
   private final int FPS = 20;
   public int screenWidth = 1000;
   public int screenHeight = 150;
@@ -49,8 +45,9 @@ public class SubtitlePanel extends JPanel implements Runnable {
   private FrameDragListener frameDragListener;
   private Dimension dimension = Toolkit.getDefaultToolkit().getScreenSize();
   private Point center;
-  private Color FONT_BORDER_COLOR = new Color(236, 64, 81);
-  private Float fontSize = 40F;
+  public static Color FONT_BORDER_COLOR = new Color(236, 64, 81);
+  public static Float BIG_FONT_SIZE = 40F;
+  public static Float SMALL_FONT_SIZE = 20F;
 
   // time
   private long currentTime;
@@ -59,8 +56,7 @@ public class SubtitlePanel extends JPanel implements Runnable {
 
   // subtitle
   private Subtitle subtitle = null;
-  private SubtitleLine subtitleLine = null;
-  private String currentText = "";
+  private Cue currentCue = Cue.EMPTY;
 
   // state
   private PlayerState playerState = PlayerState.PLAY_STATE;
@@ -104,10 +100,11 @@ public class SubtitlePanel extends JPanel implements Runnable {
   private void loadSrt(InputStream inputStream, String fileName) {
     try {
       subtitle = new Subtitle(inputStream, fileName);
-      List<SubtitleLine> subtitleLines = subtitle.getSubtitleLines();
-      startTime = subtitleLines.get(0).getStartTime().getTime();
-      endTime = subtitleLines.get(subtitleLines.size() - 1).getEndTime().getTime();
-      subtitleLine = subtitleLines.get(0);
+      subtitle.tokenize();
+      List<Cue> cues = subtitle.getCues();
+      startTime = cues.get(0).getStartTime().getTime();
+      endTime = cues.get(cues.size() - 1).getEndTime().getTime();
+      currentCue = cues.get(0);
       currentTime = 0;
     } catch (Exception e) {
       log.error("loadSrt error", e);
@@ -148,17 +145,16 @@ public class SubtitlePanel extends JPanel implements Runnable {
       currentTime = currentTime + 1_000 / FPS;
     }
 
-    SubtitleLine subtitleLine = subtitle.getSubtitleLine(currentTime);
-    Optional.ofNullable(subtitleLine).map(SubtitleLine::getText).ifPresentOrElse(text -> {
-      this.subtitleLine = subtitleLine;
-      this.currentText = text;
+    Cue cue = subtitle.getSubtitleLine(currentTime);
+    Optional.ofNullable(cue).map(Cue::getText).ifPresentOrElse(text -> {
+      this.currentCue = cue;
     }, () -> {
       // before the first subtitle, show file name
       if (currentTime < startTime) {
-        this.currentText = subtitle.getFileName();
-        return;
+        currentCue = Cue.SIMPLE_CUE.apply(subtitle.getFileName());
+      } else {
+        currentCue = Cue.EMPTY;
       }
-      this.currentText = "";
     });
   }
 
@@ -167,35 +163,16 @@ public class SubtitlePanel extends JPanel implements Runnable {
     Graphics2D g2 = (Graphics2D) g;
     g2.setRenderingHint(RenderingHints.KEY_TEXT_ANTIALIASING,
         RenderingHints.VALUE_TEXT_ANTIALIAS_ON);
-    g2.setFont(g2.getFont().deriveFont(Font.BOLD, fontSize));
+    g2.setFont(g2.getFont().deriveFont(Font.BOLD, BIG_FONT_SIZE));
 
-    String screenOutput = currentText;
-    if (playerState == PlayerState.PAUSE_STATE) {
-      screenOutput += "\n" + PAUSE_ICON + "" + new TimeCode(currentTime);
-    }
+    // calc screenWidth and textHeight
+    List<String> texts = currentCue.getTexts();
+    screenWidth = getMaxTextLength(texts, g2);
+    int textHeight = (int) g2.getFontMetrics().getStringBounds(texts.get(0), g2).getHeight() + 30;
 
-    screenWidth = getMaxTextLength(screenOutput, g2);
-    int textHeight = (int) g2.getFontMetrics().getStringBounds(screenOutput, g2).getHeight() + 10;
-
-    int textX;
-    int textY = textHeight;
-
-    for (String text : screenOutput.split("\n")) {
-      textX = getXForCenteredText(text, screenWidth, g2);
-
-      g2.setColor(FONT_BORDER_COLOR);
-      g2.drawString(text, textX, textY);
-
-      g2.setColor(FONT_BORDER_COLOR);
-      g2.drawString(text, textX + 2, textY + 2);
-
-      g2.setColor(Color.white);
-      g2.drawString(text, textX + 1, textY + 1);
-
-      textY += textHeight;
-    }
-
-    screenHeight = Math.max(textY - textHeight + 20, 80);
+    // draw cue
+    int textY = currentCue.draw(this, screenWidth, textHeight, g2);
+    screenHeight = Math.max(textY + 30, 80);
     screenWidth = Math.max(screenWidth, 80);
 
     // reset size
@@ -213,32 +190,27 @@ public class SubtitlePanel extends JPanel implements Runnable {
     g2.dispose();
   }
 
-  private int getMaxTextLength(String line, Graphics2D g2) {
-    return Arrays.stream(line.split("\n"))
+  private int getMaxTextLength(List<String> texts, Graphics2D g2) {
+    return texts.stream()
         .map(e -> (int) g2.getFontMetrics().getStringBounds(e, g2).getWidth())
         .max(Integer::compare).orElse(800);
   }
 
-  private int getXForCenteredText(String text, int width, Graphics2D g2) {
-    int length = (int) g2.getFontMetrics().getStringBounds(text, g2).getWidth();
-    return width / 2 - length / 2;
-  }
-
   public void jump(int num) {
-    if (subtitleLine == null || subtitle == null) {
-      throw new RuntimeException("jump error, subtitle or subtitleLine is null");
+    if (subtitle == null) {
+      throw new RuntimeException("jump error, subtitle or currentCue is null");
     }
-    Map<Integer, SubtitleLine> idMap = subtitle.getIdMap();
+    Map<Integer, Cue> idMap = subtitle.getIdMap();
     if (idMap == null) {
       throw new RuntimeException("jump error, idMap is null");
     }
-    SubtitleLine next = idMap.get(subtitleLine.getId() + num);
+    Cue next = idMap.get(currentCue.getId() + num);
     if (next == null) {
       log.info("jump error, next is null");
       return;
     }
     // jump to next different subtitle
-    if (next.getText().equals(currentText)) {
+    if (next.getText().equals(currentCue.getText())) {
       jump(num + (num < 0 ? -1 : 1));
       return;
     }
