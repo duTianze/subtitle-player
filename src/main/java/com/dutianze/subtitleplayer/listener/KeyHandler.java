@@ -31,10 +31,10 @@ public class KeyHandler implements KeyListener {
       subtitlePanel.jump(1);
     }
     if (keyCode == KeyEvent.VK_LEFT) {
-      subtitlePanel.setCurrentTime(subtitlePanel.getCurrentTime() - 250);
+      subtitlePanel.getCurrentTime().addAndGet(-250);
     }
     if (keyCode == KeyEvent.VK_RIGHT) {
-      subtitlePanel.setCurrentTime(subtitlePanel.getCurrentTime() + 250);
+      subtitlePanel.getCurrentTime().addAndGet(250);
     }
     if (keyCode == KeyEvent.VK_SPACE) {
       subtitlePanel.setPlayerState(subtitlePanel.getPlayerState().opposite());

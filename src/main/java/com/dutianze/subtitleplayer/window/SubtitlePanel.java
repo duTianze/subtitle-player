@@ -21,6 +21,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
+import java.util.concurrent.atomic.AtomicLong;
 import javax.swing.JFrame;
 import javax.swing.JPanel;
 import lombok.Getter;
@@ -50,13 +51,14 @@ public class SubtitlePanel extends JPanel implements Runnable {
   public static Float SMALL_FONT_SIZE = 20F;
 
   // time millisecond
-  private long currentTime;
+  private AtomicLong currentTime;
   private long startTime;
   private long endTime;
 
   // subtitle
   private Subtitle subtitle = null;
   private Cue currentCue = Cue.EMPTY;
+  private volatile int preId = 0;
 
   // state
   private PlayerState playerState = PlayerState.PLAY_STATE;
@@ -99,13 +101,14 @@ public class SubtitlePanel extends JPanel implements Runnable {
 
   private void loadSrt(InputStream inputStream, String fileName) {
     try {
+      log.info("loadSrt");
       subtitle = new Subtitle(inputStream, fileName);
       subtitle.tokenize();
       List<Cue> cues = subtitle.getCues();
       startTime = cues.get(0).getStartTime().getTime();
       endTime = cues.get(cues.size() - 1).getEndTime().getTime();
       currentCue = cues.get(0);
-      currentTime = 0;
+      currentTime = new AtomicLong(0);
     } catch (Exception e) {
       log.error("loadSrt error", e);
     }
@@ -142,20 +145,23 @@ public class SubtitlePanel extends JPanel implements Runnable {
     }
 
     if (playerState == PlayerState.PLAY_STATE) {
-      currentTime = currentTime + 1_000 / FPS;
+      currentTime.addAndGet(1_000 / FPS);
     }
 
-    Cue cue = subtitle.getSubtitleLine(currentTime);
-    Optional.ofNullable(cue).map(Cue::getText).ifPresentOrElse(text -> {
-      this.currentCue = cue;
-    }, () -> {
-      // before the first subtitle, show file name
-      if (currentTime < startTime) {
-        currentCue = Cue.SIMPLE_CUE.apply(subtitle.getFileName());
-      } else {
-        currentCue = Cue.EMPTY;
-      }
-    });
+    Cue cue = subtitle.getSubtitleLine(currentTime.get());
+    Optional.ofNullable(cue)
+        .map(Cue::getText)
+        .ifPresentOrElse(text -> {
+          this.currentCue = cue;
+          preId = cue.getId();
+        }, () -> {
+          // before the first subtitle, show file name
+          if (currentTime.get() < startTime) {
+            this.currentCue = Cue.SIMPLE_CUE.apply(subtitle.getFileName());
+          } else {
+            this.currentCue = Cue.EMPTY;
+          }
+        });
   }
 
   public void paintComponent(Graphics g) {
@@ -204,7 +210,7 @@ public class SubtitlePanel extends JPanel implements Runnable {
     if (idMap == null) {
       throw new RuntimeException("jump error, idMap is null");
     }
-    Cue next = idMap.get(currentCue.getId() + num);
+    Cue next = idMap.get(preId + num);
     if (next == null) {
       log.info("jump error, next is null");
       return;
@@ -214,6 +220,6 @@ public class SubtitlePanel extends JPanel implements Runnable {
       jump(num + (num < 0 ? -1 : 1));
       return;
     }
-    currentTime = next.getStartTime().getTime();
+    currentTime.set(next.getStartTime().getTime());
   }
 }

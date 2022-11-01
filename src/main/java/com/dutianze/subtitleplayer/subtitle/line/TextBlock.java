@@ -20,7 +20,8 @@ public class TextBlock {
   }
 
   public TextBlock(String surface, String reading, boolean isKnown) {
-    if (surface.equals(reading) || !isKnown) {
+    if (surface.equals(reading) || !isKnown || surface.chars()
+        .allMatch(c -> UnicodeBlock.of(c).equals(UnicodeBlock.KATAKANA))) {
       blockUnits = List.of(new BlockUnit(surface));
       return;
     }

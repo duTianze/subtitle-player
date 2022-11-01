@@ -29,8 +29,8 @@ public class SystemTrayPanel {
   private final SubtitlePanel subtitlePanel;
   private JFileChooser fc;
 
-  public SystemTrayPanel(SubtitlePanel subtitlePanel) {
-    this.subtitlePanel = subtitlePanel;
+  public SystemTrayPanel(SubtitlePanel sp) {
+    this.subtitlePanel = sp;
     //Check the SystemTray is supported
     if (!SystemTray.isSupported()) {
       log.info("SystemTray is not supported");
@@ -85,7 +85,12 @@ public class SystemTrayPanel {
         String jumpTime = dialog.getIdFieldString();
         log.info("getIdFieldString jumpTime:{}", jumpTime);
         CueTiming cueTiming = CueTiming.parseString(jumpTime);
-        subtitlePanel.setCurrentTime(cueTiming.getTime());
+        subtitlePanel.getCurrentTime().set(cueTiming.getTime());
+        subtitlePanel.getSubtitle()
+            .getCues().stream()
+            .filter(cue -> cueTiming.getTime() < cue.getStartTime().getTime())
+            .findFirst()
+            .ifPresent(cue -> subtitlePanel.setPreId(cue.getId()));
       }
     });
     pre.addActionListener(e -> subtitlePanel.jump(-1));
@@ -132,7 +137,7 @@ public class SystemTrayPanel {
 
     public DialogPanel(SubtitlePanel subtitlePanel) {
       add(new JLabel("Insert something to validate here:"));
-      idField.setText(new CueTiming(subtitlePanel.getCurrentTime()).toString());
+      idField.setText(new CueTiming(subtitlePanel.getCurrentTime().get()).toString());
       add(idField);
     }
 

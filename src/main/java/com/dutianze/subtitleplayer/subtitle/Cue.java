@@ -25,7 +25,6 @@ public class Cue {
 
   private static final String PAUSE_ICON = "▶";
   public static Cue EMPTY = new Cue();
-
   public static Function<String, Cue> SIMPLE_CUE = (text) -> {
     Cue cue = new Cue();
     cue.textLines = List.of(new SimpleTextLine(text));
@@ -57,8 +56,8 @@ public class Cue {
     texts.add(text);
   }
 
-  public List<String> getText() {
-    return texts;
+  public String getText() {
+    return String.join("", texts);
   }
 
   public int draw(SubtitlePanel subtitlePanel, int screenWidth, int textHeight, Graphics2D g2) {
@@ -83,7 +82,7 @@ public class Cue {
 
     // pause tip
     if (subtitlePanel.getPlayerState() == PlayerState.PAUSE_STATE) {
-      String text = PAUSE_ICON + new CueTiming(subtitlePanel.getCurrentTime());
+      String text = PAUSE_ICON + new CueTiming(subtitlePanel.getCurrentTime().get());
       int textX = getXForCenteredText(text, screenWidth, g2);
       drawString(textX, textY, text, g2);
     } else {
