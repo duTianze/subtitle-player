@@ -16,8 +16,8 @@ public class TokenizeTextLine implements TextLine {
 
   public static final Tokenizer TOKENIZER = new Tokenizer();
 
-  private String line;
-  private List<TextBlock> textBlocks;
+  private final String line;
+  private final List<TextBlock> textBlocks;
 
   public static Set<UnicodeBlock> KANA_CODES = Set.of(UnicodeBlock.HIRAGANA, UnicodeBlock.KATAKANA);
 
@@ -28,6 +28,7 @@ public class TokenizeTextLine implements TextLine {
 
   public void tokenize() {
     if (!containsKana()) {
+      textBlocks.add(new TextBlock(line));
       return;
     }
 
