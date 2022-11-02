@@ -46,9 +46,13 @@ public class SubtitlePanel extends JPanel implements Runnable {
   private FrameDragListener frameDragListener;
   private Dimension dimension = Toolkit.getDefaultToolkit().getScreenSize();
   private Point center;
-  public static Color FONT_BORDER_COLOR = new Color(236, 64, 81);
   public static Float BIG_FONT_SIZE = 40F;
-  public static Float SMALL_FONT_SIZE = 20F;
+  public static Float SMALL_FONT_SIZE = 18F;
+  public static List<Color> COLORS = List.of(
+      new Color(236, 64, 81),
+      new Color(5, 29, 33)
+  );
+  public static final String PAUSE_ICON = "▶";
 
   // time millisecond
   private AtomicLong currentTime;

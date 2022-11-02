@@ -23,7 +23,6 @@ import org.apache.commons.lang3.StringUtils;
 @Data
 public class Cue {
 
-  private static final String PAUSE_ICON = "▶";
   public static Cue EMPTY = new Cue();
   public static Function<String, Cue> SIMPLE_CUE = (text) -> {
     Cue cue = new Cue();
@@ -64,15 +63,18 @@ public class Cue {
     int textY = textHeight;
     for (TextLine textLine : textLines) {
       int textX = getXForCenteredText(textLine.getText(), screenWidth, g2);
-      for (TextBlock textBlock : textLine.getTextBlock()) {
+      List<TextBlock> block = textLine.getTextBlock();
+      for (int i = 0; i < block.size(); i++) {
+        TextBlock textBlock = block.get(i);
+        g2.setColor(SubtitlePanel.COLORS.get(i % SubtitlePanel.COLORS.size()));
         for (BlockUnit blockUnit : textBlock.getBlockUnits()) {
           String surface = blockUnit.getSurface();
           // reading
           String reading = blockUnit.getReading();
           g2.setFont(g2.getFont().deriveFont(Font.PLAIN, SubtitlePanel.SMALL_FONT_SIZE));
           drawString(textX, (int) (textY - SubtitlePanel.BIG_FONT_SIZE), reading, g2);
-          g2.setFont(g2.getFont().deriveFont(Font.BOLD, SubtitlePanel.BIG_FONT_SIZE));
           // surface
+          g2.setFont(g2.getFont().deriveFont(Font.BOLD, SubtitlePanel.BIG_FONT_SIZE));
           drawString(textX, textY, surface, g2);
           textX += getTextWidth(surface, g2);
         }
@@ -82,7 +84,7 @@ public class Cue {
 
     // pause tip
     if (subtitlePanel.getPlayerState() == PlayerState.PAUSE_STATE) {
-      String text = PAUSE_ICON + new CueTiming(subtitlePanel.getCurrentTime().get());
+      String text = SubtitlePanel.PAUSE_ICON + new CueTiming(subtitlePanel.getCurrentTime().get());
       int textX = getXForCenteredText(text, screenWidth, g2);
       drawString(textX, textY, text, g2);
     } else {
@@ -95,14 +97,13 @@ public class Cue {
     if (StringUtils.isEmpty(text)) {
       return;
     }
-    g2.setColor(SubtitlePanel.FONT_BORDER_COLOR);
+    Color preColor = g2.getColor();
     g2.drawString(text, textX, textY);
-
-    g2.setColor(SubtitlePanel.FONT_BORDER_COLOR);
     g2.drawString(text, textX + 2, textY + 2);
 
     g2.setColor(Color.white);
     g2.drawString(text, textX + 1, textY + 1);
+    g2.setColor(preColor);
   }
 
   private int getXForCenteredText(String text, int width, Graphics2D g2) {
