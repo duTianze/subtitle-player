@@ -87,9 +87,12 @@ public class Cue {
       String text =
           SubtitleWindow.PAUSE_ICON + new CueTiming(subtitleWindow.getCurrentTime().get());
       int textX = getXForCenteredText(text, screenWidth, g2);
+      subtitleWindow.setMinScreenWith(
+          (int) g2.getFontMetrics().getStringBounds(text, g2).getWidth());
       drawString(textX, textY, text, g2);
     } else {
       textY -= textHeight;
+      subtitleWindow.setMinScreenWith(80);
     }
     return textY;
   }

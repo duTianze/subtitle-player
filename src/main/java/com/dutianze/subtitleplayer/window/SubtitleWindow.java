@@ -41,6 +41,7 @@ public class SubtitleWindow extends JPanel implements Runnable, InitializingBean
   private final int FPS = 20;
   public int screenWidth = 1000;
   public int screenHeight = 150;
+  private int minScreenWith = 80;
   private Thread thread;
   private Font purisaB;
   private Dimension dimension = Toolkit.getDefaultToolkit().getScreenSize();
@@ -179,9 +180,9 @@ public class SubtitleWindow extends JPanel implements Runnable, InitializingBean
     int textHeight = (int) g2.getFontMetrics().getStringBounds(texts.get(0), g2).getHeight() + 30;
 
     // draw cue
+    screenWidth = Math.max(screenWidth, minScreenWith);
     int textY = currentCue.draw(this, screenWidth, textHeight, g2);
     screenHeight = Math.max(textY + 30, 80);
-    screenWidth = Math.max(screenWidth, 80);
 
     // reset size
     this.setSize(screenWidth, screenHeight);

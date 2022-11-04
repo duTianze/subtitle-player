@@ -82,7 +82,7 @@ public class TrayPanel {
 
     time.addActionListener(e -> {
       DialogPanel dialog = new DialogPanel(subtitleWindow);
-      int result = JOptionPane.showConfirmDialog(null,
+      int result = JOptionPane.showConfirmDialog(subtitleWindow,
           dialog, "Test", JOptionPane.OK_CANCEL_OPTION);
       if (result == JOptionPane.OK_OPTION) {
         String jumpTime = dialog.getIdFieldString();
