@@ -18,19 +18,22 @@ import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.JTextField;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Component;
 
 /**
  * @author dutianze
  * @date 2022/10/3
  */
 @Slf4j
-public class SystemTrayPanel {
+@Component
+public class TrayPanel {
 
-  private final SubtitlePanel subtitlePanel;
+  @Autowired
+  private SubtitleWindow subtitleWindow;
   private JFileChooser fc;
 
-  public SystemTrayPanel(SubtitlePanel sp) {
-    this.subtitlePanel = sp;
+  public TrayPanel() {
     //Check the SystemTray is supported
     if (!SystemTray.isSupported()) {
       log.info("SystemTray is not supported");
@@ -78,32 +81,32 @@ public class SystemTrayPanel {
         "This dialog box is run from the About menu item"));
 
     time.addActionListener(e -> {
-      DialogPanel dialog = new DialogPanel(subtitlePanel);
+      DialogPanel dialog = new DialogPanel(subtitleWindow);
       int result = JOptionPane.showConfirmDialog(null,
           dialog, "Test", JOptionPane.OK_CANCEL_OPTION);
       if (result == JOptionPane.OK_OPTION) {
         String jumpTime = dialog.getIdFieldString();
         log.info("getIdFieldString jumpTime:{}", jumpTime);
         CueTiming cueTiming = CueTiming.parseString(jumpTime);
-        subtitlePanel.getCurrentTime().set(cueTiming.getTime());
-        subtitlePanel.getSubtitle()
+        subtitleWindow.getCurrentTime().set(cueTiming.getTime());
+        subtitleWindow.getSubtitle()
             .getCues().stream()
             .filter(cue -> cueTiming.getTime() < cue.getStartTime().getTime())
             .findFirst()
-            .ifPresent(cue -> subtitlePanel.setPreId(cue.getId()));
+            .ifPresent(cue -> subtitleWindow.setPreId(cue.getId()));
       }
     });
-    pre.addActionListener(e -> subtitlePanel.jump(-1));
+    pre.addActionListener(e -> subtitleWindow.jump(-1));
     pause.addActionListener(
-        e -> subtitlePanel.setPlayerState(subtitlePanel.getPlayerState().opposite()));
-    next.addActionListener(e -> subtitlePanel.jump(1));
+        e -> subtitleWindow.setPlayerState(subtitleWindow.getPlayerState().opposite()));
+    next.addActionListener(e -> subtitleWindow.jump(1));
     openFile.addActionListener(e -> {
       int returnVal = fc.showOpenDialog(null);
       if (returnVal == JFileChooser.APPROVE_OPTION) {
         File file = fc.getSelectedFile();
         log.info("Opening: " + file.getName() + ".");
         try {
-          subtitlePanel.loadSrt(file);
+          subtitleWindow.loadSrt(file);
         } catch (Exception ex) {
           log.error("Open subtitle error.");
         }
@@ -118,7 +121,7 @@ public class SystemTrayPanel {
   }
 
   protected static Image createImage() {
-    URL imageURL = SystemTrayPanel.class.getResource("/images/bulb.gif");
+    URL imageURL = TrayPanel.class.getResource("/images/bulb.gif");
 
     if (imageURL == null) {
       System.err.println("Resource not found: " + "/images/bulb.gif");
@@ -135,9 +138,9 @@ public class SystemTrayPanel {
 
     private final JTextField idField = new JTextField(20);
 
-    public DialogPanel(SubtitlePanel subtitlePanel) {
+    public DialogPanel(SubtitleWindow subtitleWindow) {
       add(new JLabel("Insert something to validate here:"));
-      idField.setText(new CueTiming(subtitlePanel.getCurrentTime().get()).toString());
+      idField.setText(new CueTiming(subtitleWindow.getCurrentTime().get()).toString());
       add(idField);
     }
 

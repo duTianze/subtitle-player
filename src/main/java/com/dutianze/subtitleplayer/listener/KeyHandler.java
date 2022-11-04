@@ -1,19 +1,22 @@
 package com.dutianze.subtitleplayer.listener;
 
-import com.dutianze.subtitleplayer.window.SubtitlePanel;
+import com.dutianze.subtitleplayer.window.SubtitleWindow;
+import java.awt.event.KeyAdapter;
 import java.awt.event.KeyEvent;
-import java.awt.event.KeyListener;
+import org.springframework.stereotype.Component;
 
 /**
  * @author dutianze
  * @date 2022/10/4
  */
-public class KeyHandler implements KeyListener {
+@Component
+public class KeyHandler extends KeyAdapter {
 
-  private final SubtitlePanel subtitlePanel;
+  private final SubtitleWindow subtitleWindow;
 
-  public KeyHandler(SubtitlePanel subtitlePanel) {
-    this.subtitlePanel = subtitlePanel;
+  public KeyHandler(SubtitleWindow subtitleWindow) {
+    this.subtitleWindow = subtitleWindow;
+    subtitleWindow.addKeyListener(this);
   }
 
   @Override
@@ -25,19 +28,19 @@ public class KeyHandler implements KeyListener {
   public void keyPressed(KeyEvent e) {
     int keyCode = e.getKeyCode();
     if (keyCode == KeyEvent.VK_UP) {
-      subtitlePanel.jump(-1);
+      subtitleWindow.jump(-1);
     }
     if (keyCode == KeyEvent.VK_DOWN) {
-      subtitlePanel.jump(1);
+      subtitleWindow.jump(1);
     }
     if (keyCode == KeyEvent.VK_LEFT) {
-      subtitlePanel.getCurrentTime().addAndGet(-250);
+      subtitleWindow.getCurrentTime().addAndGet(-250);
     }
     if (keyCode == KeyEvent.VK_RIGHT) {
-      subtitlePanel.getCurrentTime().addAndGet(250);
+      subtitleWindow.getCurrentTime().addAndGet(250);
     }
     if (keyCode == KeyEvent.VK_SPACE) {
-      subtitlePanel.setPlayerState(subtitlePanel.getPlayerState().opposite());
+      subtitleWindow.setPlayerState(subtitleWindow.getPlayerState().opposite());
     }
   }
 

@@ -12,5 +12,6 @@ public interface TextLine {
 
   String getText();
 
-  default void tokenize(){}
+  default void tokenize() {
+  }
 }

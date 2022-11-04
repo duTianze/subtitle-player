@@ -1,23 +1,26 @@
 package com.dutianze.subtitleplayer.listener;
 
-import com.dutianze.subtitleplayer.window.SubtitlePanel;
+import com.dutianze.subtitleplayer.window.SubtitleWindow;
 import java.awt.datatransfer.DataFlavor;
 import java.awt.datatransfer.UnsupportedFlavorException;
 import java.io.File;
 import java.io.IOException;
 import java.util.List;
 import javax.swing.TransferHandler;
+import org.springframework.stereotype.Component;
 
 /**
  * @author dutianze
  * @date 2022/10/18
  */
+@Component
 public class FileDropHandler extends TransferHandler {
 
-  private final SubtitlePanel subtitlePanel;
+  private final SubtitleWindow subtitleWindow;
 
-  public FileDropHandler(SubtitlePanel subtitlePanel) {
-    this.subtitlePanel = subtitlePanel;
+  public FileDropHandler(SubtitleWindow subtitleWindow) {
+    this.subtitleWindow = subtitleWindow;
+    subtitleWindow.setTransferHandler(this);
   }
 
   @Override
@@ -43,7 +46,7 @@ public class FileDropHandler extends TransferHandler {
     } catch (UnsupportedFlavorException | IOException ex) {
       return false;
     }
-    files.stream().findFirst().ifPresent(subtitlePanel::loadSrt);
+    files.stream().findFirst().ifPresent(subtitleWindow::loadSrt);
     return true;
   }
 }

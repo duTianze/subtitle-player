@@ -27,11 +27,6 @@ public class TokenizeTextLine implements TextLine {
   }
 
   public void tokenize() {
-    if (!containsKana()) {
-      textBlocks.add(new TextBlock(line));
-      return;
-    }
-
     List<Token> tokenize = TOKENIZER.tokenize(line);
     for (Token token : tokenize) {
       TextBlock textBlock = new TextBlock(token.getSurface(), token.getReading(), token.isKnown());
@@ -47,13 +42,5 @@ public class TokenizeTextLine implements TextLine {
   @Override
   public String getText() {
     return textBlocks.stream().map(TextBlock::getText).collect(Collectors.joining());
-  }
-
-  private boolean containsKana() {
-    return line.chars().anyMatch(this::isKana);
-  }
-
-  private boolean isKana(int c) {
-    return KANA_CODES.contains(UnicodeBlock.of(c));
   }
 }

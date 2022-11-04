@@ -6,7 +6,7 @@ import com.dutianze.subtitleplayer.subtitle.line.TextBlock;
 import com.dutianze.subtitleplayer.subtitle.line.TextLine;
 import com.dutianze.subtitleplayer.subtitle.line.TokenizeTextLine;
 import com.dutianze.subtitleplayer.window.PlayerState;
-import com.dutianze.subtitleplayer.window.SubtitlePanel;
+import com.dutianze.subtitleplayer.window.SubtitleWindow;
 import java.awt.Color;
 import java.awt.Font;
 import java.awt.Graphics2D;
@@ -59,22 +59,22 @@ public class Cue {
     return String.join("", texts);
   }
 
-  public int draw(SubtitlePanel subtitlePanel, int screenWidth, int textHeight, Graphics2D g2) {
+  public int draw(SubtitleWindow subtitleWindow, int screenWidth, int textHeight, Graphics2D g2) {
     int textY = textHeight;
     for (TextLine textLine : textLines) {
       int textX = getXForCenteredText(textLine.getText(), screenWidth, g2);
       List<TextBlock> block = textLine.getTextBlock();
       for (int i = 0; i < block.size(); i++) {
         TextBlock textBlock = block.get(i);
-        g2.setColor(SubtitlePanel.COLORS.get(i % SubtitlePanel.COLORS.size()));
+        g2.setColor(SubtitleWindow.COLORS.get(i % SubtitleWindow.COLORS.size()));
         for (BlockUnit blockUnit : textBlock.getBlockUnits()) {
           String surface = blockUnit.getSurface();
           // reading
           String reading = blockUnit.getReading();
-          g2.setFont(g2.getFont().deriveFont(Font.PLAIN, SubtitlePanel.SMALL_FONT_SIZE));
-          drawString(textX, (int) (textY - SubtitlePanel.BIG_FONT_SIZE), reading, g2);
+          g2.setFont(g2.getFont().deriveFont(Font.PLAIN, SubtitleWindow.SMALL_FONT_SIZE));
+          drawString(textX, (int) (textY - SubtitleWindow.BIG_FONT_SIZE), reading, g2);
           // surface
-          g2.setFont(g2.getFont().deriveFont(Font.BOLD, SubtitlePanel.BIG_FONT_SIZE));
+          g2.setFont(g2.getFont().deriveFont(Font.BOLD, SubtitleWindow.BIG_FONT_SIZE));
           drawString(textX, textY, surface, g2);
           textX += getTextWidth(surface, g2);
         }
@@ -83,8 +83,9 @@ public class Cue {
     }
 
     // pause tip
-    if (subtitlePanel.getPlayerState() == PlayerState.PAUSE_STATE) {
-      String text = SubtitlePanel.PAUSE_ICON + new CueTiming(subtitlePanel.getCurrentTime().get());
+    if (subtitleWindow.getPlayerState() == PlayerState.PAUSE_STATE) {
+      String text =
+          SubtitleWindow.PAUSE_ICON + new CueTiming(subtitleWindow.getCurrentTime().get());
       int textX = getXForCenteredText(text, screenWidth, g2);
       drawString(textX, textY, text, g2);
     } else {

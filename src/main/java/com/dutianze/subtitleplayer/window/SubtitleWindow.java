@@ -1,8 +1,5 @@
 package com.dutianze.subtitleplayer.window;
 
-import com.dutianze.subtitleplayer.listener.FileDropHandler;
-import com.dutianze.subtitleplayer.listener.FrameDragListener;
-import com.dutianze.subtitleplayer.listener.KeyHandler;
 import com.dutianze.subtitleplayer.subtitle.Cue;
 import com.dutianze.subtitleplayer.subtitle.Subtitle;
 import java.awt.Color;
@@ -27,6 +24,8 @@ import javax.swing.JPanel;
 import lombok.Getter;
 import lombok.Setter;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.InitializingBean;
+import org.springframework.stereotype.Component;
 
 /**
  * @author dutianze
@@ -35,15 +34,15 @@ import lombok.extern.slf4j.Slf4j;
 @Slf4j
 @Getter
 @Setter
-public class SubtitlePanel extends JPanel implements Runnable {
+@Component
+public class SubtitleWindow extends JPanel implements Runnable, InitializingBean {
 
+  private JFrame window;
   private final int FPS = 20;
   public int screenWidth = 1000;
   public int screenHeight = 150;
   private Thread thread;
   private Font purisaB;
-  private JFrame window;
-  private FrameDragListener frameDragListener;
   private Dimension dimension = Toolkit.getDefaultToolkit().getScreenSize();
   private Point center;
   public static Float BIG_FONT_SIZE = 40F;
@@ -67,30 +66,29 @@ public class SubtitlePanel extends JPanel implements Runnable {
   // state
   private PlayerState playerState = PlayerState.PLAY_STATE;
 
-  public SubtitlePanel(JFrame window) {
-    // init
-    this.window = window;
+  public SubtitleWindow() throws Exception {
+    this.window = new JFrame();
+    this.window.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+    this.window.setUndecorated(true);
+    this.window.setResizable(false);
+    this.window.setTitle("Subtitle Player");
+    this.window.setBackground(new Color(0, 0, 0, 0));
+    this.window.add(this);
+    this.window.pack();
+    this.window.setAlwaysOnTop(true);
     this.setPreferredSize(new Dimension(screenWidth, screenHeight));
     this.setBackground(new Color(0.1f, 0.1f, 0.1f, 0.1f));
     this.setDoubleBuffered(true);
     this.setFocusable(true);
-    try {
-      InputStream is = getClass().getResourceAsStream("/font/Purisa Bold.ttf");
-      Objects.requireNonNull(is);
-      purisaB = Font.createFont(Font.TRUETYPE_FONT, is);
-    } catch (Exception e) {
-      log.error("load font error", e);
-    }
-    // listener
-    frameDragListener = new FrameDragListener(window, this);
-    KeyHandler keyHandler = new KeyHandler(this);
-    this.addKeyListener(keyHandler);
-    window.addMouseListener(frameDragListener);
-    window.addMouseMotionListener(frameDragListener);
-    FileDropHandler fileDropHandler = new FileDropHandler(this);
-    this.setTransferHandler(fileDropHandler);
 
-    // subtitle
+    Dimension dimension = Toolkit.getDefaultToolkit().getScreenSize();
+    center = (new Point((int) (dimension.getWidth() / 2), (int) (dimension.getHeight() - 200)));
+
+    InputStream is = getClass().getResourceAsStream("/font/Purisa Bold.ttf");
+    Objects.requireNonNull(is);
+    purisaB = Font.createFont(Font.TRUETYPE_FONT, is);
+
+    // load test subtitle
     InputStream testIn = Subtitle.class.getResourceAsStream("/Kanojo_Mo_Kanojo_001.srt");
     loadSrt(testIn, "Kanojo_Mo_Kanojo_001.srt");
   }
@@ -190,14 +188,15 @@ public class SubtitlePanel extends JPanel implements Runnable {
     window.setSize(screenWidth, screenHeight);
 
     // reset location
-    Point location = window.getLocation();
-    if (frameDragListener.isDrag()) {
-      center = new Point((int) (location.getX() + screenWidth / 2), (int) location.getY());
-    }
     window.setLocation((int) (center.getX() - screenWidth / 2), (int) center.getY());
 
     // dispose
     g2.dispose();
+  }
+
+  public void stayTextCenter() {
+    Point location = window.getLocation();
+    center = new Point((int) (location.getX() + screenWidth / 2), (int) location.getY());
   }
 
   private int getMaxTextLength(List<String> texts, Graphics2D g2) {
@@ -225,5 +224,15 @@ public class SubtitlePanel extends JPanel implements Runnable {
       return;
     }
     currentTime.set(next.getStartTime().getTime());
+  }
+
+  public void setWindowLocation(Point p) {
+    window.setLocation(p);
+  }
+
+  @Override
+  public void afterPropertiesSet() {
+    this.startGameThread();
+    window.setVisible(true);
   }
 }
