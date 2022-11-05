@@ -112,6 +112,7 @@ public class SubtitleWindow extends JPanel implements Runnable, InitializingBean
       endTime = cues.get(cues.size() - 1).getEndTime().getTime();
       currentCue = cues.get(0);
       currentTime = new AtomicLong(0);
+      preId = 0;
     } catch (Exception e) {
       log.error("loadSrt error", e);
     }
